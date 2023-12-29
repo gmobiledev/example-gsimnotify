@@ -7,4 +7,6 @@ export class SaveTokenDto {
 
     @IsNotEmpty()
     readonly token: string;
+
+    readonly os: string;
 }

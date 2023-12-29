@@ -13,4 +13,7 @@ export class UserEntity {
 
     @Column()
     token: string
+
+    @Column()
+    os: string
 }

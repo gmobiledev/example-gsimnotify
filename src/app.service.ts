@@ -24,6 +24,7 @@ export class AppService {
             user = new UserEntity();
             user.uid = dto.uid;
         }
+        user.os = dto.os;
         user.token = dto.token;
         user = await this.userRepos.save(user);
         return user;
@@ -47,11 +48,18 @@ export class AppService {
                 callee: dto.data.callee,
                 call_id: dto.data.call_id ? dto.data.call_id : '',
                 message: `${dto.data.caller} đang gọi tới`,
-                timestamp: dto.data.timestamp
+                timestamp: dto.data.timestamp,
+                ring_time: dto.data.ring_time ? dto.data.ring_time + '' : '0'
             }
           }]
           console.log(messages);
-          const r = await this.fcmLibService.sendFirebaseMessagesWithoutNotification(messages);
+          let r;
+          if(user.os && user.os.toLowerCase() == 'android') {
+            r = await this.fcmLibService.sendFirebaseMessagesWithoutNotification(messages);
+          } else {
+            r = await this.fcmLibService.sendFirebaseMessages(messages);
+          }
+          
           console.log(JSON.stringify(r));
           return { firebase_response: r, firebase_token: user.token };
     }

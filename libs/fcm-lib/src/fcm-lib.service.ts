@@ -90,13 +90,17 @@ export class FcmLibService {
           const tokenMessages: firebase.messaging.TokenMessage[] = groupedFirebaseMessages.map(({ message, title, token, data }) => ({
             data: data,
             token,
+            android: {
+              priority: "high",
+              ttl: 0
+            },
             apns: {
               payload: {
                 aps: {
                   'content-available': 1,
                 },
               },
-            },
+            }
           }));
 
           return await this.sendAll(tokenMessages, dryRun);
