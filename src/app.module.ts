@@ -7,6 +7,7 @@ import { UserEntity } from './entities/user.entity';
 import { FcmLibModule } from '@app/fcm-lib';
 import { configure } from 'log4js';
 import { LoggerMiddleware } from './shared/logger.middleware';
+import { CommonService } from './shared/common.service';
 
 
 @Module({
@@ -36,7 +37,7 @@ import { LoggerMiddleware } from './shared/logger.middleware';
   controllers: [
     AppController
   ],
-  providers: [ AppService ],
+  providers: [ AppService, CommonService ],
 })
 export class AppModule  implements NestModule {
   public configure(consumer: MiddlewareConsumer) {

@@ -115,7 +115,7 @@ export class CommonService {
      * @param body - Nội dung push trong payload
      * @param deviceId - id của thiết bị
      */
-    async pushNotifyIos(filePath, password, body, deviceId, production = false): Promise<any> {
+    async pushNotifyIos(filePath, password, body, deviceId, topic, pushType, production = false): Promise<any> {
         let apn = require('apn');
         let apnProvider = new apn.Provider({
             key: fs.readFileSync(join(process.cwd(), filePath), "utf8"),
@@ -129,7 +129,10 @@ export class CommonService {
         // note.badge = 3;
         // note.sound = "ping.aiff";
         // note.alert = "\uD83D\uDCE7 \u2709 You have a new message";
-        note.rawPayload = body;
+        note.topic = topic;
+        note.rawPayload = body;      
+        note.pushType = pushType;  
+        console.log(JSON.stringify(note));
         return new Promise((resolve, reject) => {
             apnProvider.send(note, deviceId).then((result) => {
                 // see documentation for an explanation of result
