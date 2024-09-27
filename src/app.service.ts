@@ -34,7 +34,7 @@ export class AppService {
     }
 
     async callbackGsimNotify(dto) {
-        console.log(dto);
+        console.log("callbackGsimNotify" ,dto);
         // let dataVerify = `gateway=${dto.gateway}&merchant_id=${dto.merchant_id}&caller=${dto.data.caller}&callee=${dto.data.callee}`;
         // console.log(dataVerify);
         // let rVerify;
@@ -71,16 +71,16 @@ export class AppService {
                 ring_time: dto.data.ring_time ? dto.data.ring_time + '' : '0'
             }
           }]
-          console.log(messages);
+          console.log("callbackGsimNotify " , messages);
           let r;
-          console.log(user);
+          console.log("callbackGsimNotify ", user);
           if(user.os && user.os.toLowerCase() == 'android') {
             r = await this.fcmLibService.sendFirebaseMessagesWithoutNotification(messages);
-            console.log("res notify Android", JSON.stringify(r));
+            console.log("callbackGsimNotify res notify Android", JSON.stringify(r));
           } else {
             if (!['INCOMING_CALL'].includes(dto.data.status)) {
                 r = await this.fcmLibService.sendFirebaseMessages(messages);
-                console.log("res notify IOS: Firebase", JSON.stringify(r));
+                console.log("callbackGsimNotify res notify IOS: Firebase", JSON.stringify(r));
             } else {
                 const isProductionMode = process.env.NODE_ENV == 'production' ? true : false;
                 const dataNotifyIOS = {
@@ -95,9 +95,9 @@ export class AppService {
                     "to_number": dto.data.callee,
                     "aps": { "alert": "incoming" }
                 };
-                console.log("dataNotifyIOS", dataNotifyIOS);
+                console.log("callbackGsimNotify dataNotifyIOS: ", dataNotifyIOS);
                 const rIos = await this.commonService.pushNotifyIos('/secret/certificate_ios_2.pem', '1234', dataNotifyIOS, user.token, "com.newgmobile.test.vn.voip", "voip", false);
-                console.log("res notify IOS: APN", JSON.stringify(rIos));
+                console.log("callbackGsimNotify res notify IOS: APN", JSON.stringify(rIos));
                 if (!rIos.sent || rIos.sent.length < 1) {
                   throw new HttpException({ message: "Gui notify fail" }, HttpStatus.BAD_REQUEST);
               }
