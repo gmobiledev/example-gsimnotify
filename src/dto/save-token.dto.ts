@@ -8,5 +8,7 @@ export class SaveTokenDto {
     @IsNotEmpty()
     readonly token: string;
 
+    token_firebase: string;
+
     readonly os: string;
 }

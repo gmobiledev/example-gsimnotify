@@ -27,27 +27,33 @@ export class AppService {
             user.uid = dto.uid;
         }
         user.os = dto.os;
-        user.token = dto.token;
+        user.token = dto.token ? dto.token : user.token;
+        user.token_firebase = dto.token_firebase ? dto.token_firebase : user.token_firebase;
         user = await this.userRepos.save(user);
         return user;
     }
 
     async callbackGsimNotify(dto) {
         console.log(dto);
-        let dataVerify = `gateway=${dto.gateway}&merchant_id=${dto.merchant_id}&caller=${dto.data.caller}&callee=${dto.data.callee}`;
-        console.log(dataVerify);
-        let rVerify;
-        try {
-            rVerify = this.commonService.verifyRsaPublicKey(dataVerify, dto.signature, '/secret/gsim_notify.public.pem');
-        } catch (error) {
-            throw new HttpException({ message: 'Chữ ký không hợp lệ' }, 400);
-        }
-        if (!rVerify) {
-            throw new HttpException({ message: 'Chữ ký không hợp lệ' }, 400);
-        }
+        // let dataVerify = `gateway=${dto.gateway}&merchant_id=${dto.merchant_id}&caller=${dto.data.caller}&callee=${dto.data.callee}`;
+        // console.log(dataVerify);
+        // let rVerify;
+        // try {
+        //     rVerify = this.commonService.verifyRsaPublicKey(dataVerify, dto.signature, '/secret/gsim_notify.public.pem');
+        // } catch (error) {
+        //     throw new HttpException({ message: 'Chữ ký không hợp lệ' }, 400);
+        // }
+        // if (!rVerify) {
+        //     throw new HttpException({ message: 'Chữ ký không hợp lệ' }, 400);
+        // }
         const user = await this.userRepos.findOne({where: {uid: dto.data.uid}});
         if(!user) {
             throw new HttpException("User không tồn tại", HttpStatus.BAD_REQUEST)
+        }
+
+        let tokenFirebase = user.token;
+        if (user.os && user.os.toLowerCase() == 'ios') {
+            tokenFirebase = user.token_firebase;
         }
 
         let messages = [{
@@ -70,26 +76,32 @@ export class AppService {
           console.log(user);
           if(user.os && user.os.toLowerCase() == 'android') {
             r = await this.fcmLibService.sendFirebaseMessagesWithoutNotification(messages);
+            console.log("res notify Android", JSON.stringify(r));
           } else {
-              r = await this.fcmLibService.sendFirebaseMessages(messages);
-              console.log(JSON.stringify(r));
-              const isProductionMode = process.env.NODE_ENV == 'production' ? true : false
-              const rIos = await this.commonService.pushNotifyIos('/secret/Certificates_ios_gtalk.pem',
-                  'Gmobile123', { "caller": dto.data.caller, "callee": dto.data.callee, "status": dto.data.status,
-                  "call_id": dto.data.call_id ? dto.data.call_id : '',
-                  "caller_name": dto.data.caller,
-                  "caller_id_type": "string",
-                  "caller_id": dto.data.call_id ? dto.data.call_id : '',
-                  "uuid": "abc",
-                  "has_video": "false",
-                  "from_number": dto.data.caller,
-                  "to_number": dto.data.callee,
-                  "aps": { "alert": "incoming" } },
-                  user.token, "vn.gmobile.mygmobile.voip", "voip", false);
-              if (!rIos.sent || rIos.sent.length < 1) {
+            if (!['INCOMING_CALL'].includes(dto.data.status)) {
+                r = await this.fcmLibService.sendFirebaseMessages(messages);
+            } else {
+                const isProductionMode = process.env.NODE_ENV == 'production' ? true : false;
+                const dataNotifyIOS = {
+                    "caller": dto.data.caller, "callee": dto.data.callee, "status": dto.data.status,
+                    "call_id": dto.data.call_id ? dto.data.call_id : '',
+                    "caller_name": dto.data.caller,
+                    "caller_id_type": "string",
+                    "caller_id": dto.data.call_id ? dto.data.call_id : '',
+                    "uuid": dto.data.uid,
+                    "has_video": "false",
+                    "from_number": dto.data.caller,
+                    "to_number": dto.data.callee,
+                    "aps": { "alert": "incoming" }
+                };
+                console.log("dataNotifyIOS", dataNotifyIOS);
+                const rIos = await this.commonService.pushNotifyIos('/secret/certificate_ios_2.pem', '1234', dataNotifyIOS, user.token, "com.newgmobile.test.vn.voip", "voip", false);
+                console.log("res notify IOS", JSON.stringify(rIos));
+                if (!rIos.sent || rIos.sent.length < 1) {
                   throw new HttpException({ message: "Gui notify fail" }, HttpStatus.BAD_REQUEST);
               }
-              
+            }
+            
               return { message: "success" };
 
           }
