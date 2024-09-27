@@ -80,6 +80,7 @@ export class AppService {
           } else {
             if (!['INCOMING_CALL'].includes(dto.data.status)) {
                 r = await this.fcmLibService.sendFirebaseMessages(messages);
+                console.log("res notify IOS: Firebase", JSON.stringify(r));
             } else {
                 const isProductionMode = process.env.NODE_ENV == 'production' ? true : false;
                 const dataNotifyIOS = {
@@ -96,7 +97,7 @@ export class AppService {
                 };
                 console.log("dataNotifyIOS", dataNotifyIOS);
                 const rIos = await this.commonService.pushNotifyIos('/secret/certificate_ios_2.pem', '1234', dataNotifyIOS, user.token, "com.newgmobile.test.vn.voip", "voip", false);
-                console.log("res notify IOS", JSON.stringify(rIos));
+                console.log("res notify IOS: APN", JSON.stringify(rIos));
                 if (!rIos.sent || rIos.sent.length < 1) {
                   throw new HttpException({ message: "Gui notify fail" }, HttpStatus.BAD_REQUEST);
               }
