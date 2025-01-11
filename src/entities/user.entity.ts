@@ -16,4 +16,7 @@ export class UserEntity {
 
     @Column()
     os: string
+
+    @Column()
+    token_firebase: string;
 }
