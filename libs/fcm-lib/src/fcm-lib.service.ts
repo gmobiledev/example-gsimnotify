@@ -3,7 +3,6 @@ import { mapLimit } from 'async';
 import * as firebase from 'firebase-admin';
 import { BatchResponse } from 'firebase-admin/lib/messaging/messaging-api';
 import { chunk } from 'lodash';
-import * as shell from 'shelljs';
 
 export interface ISendFirebaseMessages {
   token: string;
@@ -143,7 +142,8 @@ export class FcmLibService {
     //   }
     // }
     try {
-      return firebase.messaging().sendAll(messages, dryRun);  
+      // return firebase.messaging().sendAll(messages, dryRun);  
+      return firebase.messaging().sendEach(messages, dryRun);  
     } catch (error) {
       console.log(error);
     }

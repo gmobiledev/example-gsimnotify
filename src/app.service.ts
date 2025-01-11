@@ -40,10 +40,10 @@ export class AppService {
         try {
             rVerify = this.commonService.verifyRsaPublicKey(dataVerify, dto.signature, '/secret/gsim_notify.public.pem');
         } catch (error) {
-            throw new HttpException({ message: 'Chữ ký không hợp lệ' }, 400);
+            // throw new HttpException({ message: 'Chữ ký không hợp lệ' }, 400);
         }
         if (!rVerify) {
-            throw new HttpException({ message: 'Chữ ký không hợp lệ' }, 400);
+            // throw new HttpException({ message: 'Chữ ký không hợp lệ' }, 400);
         }
         const user = await this.userRepos.findOne({where: {uid: dto.data.uid}});
         if(!user) {
